@@ -1,0 +1,112 @@
+name: Extract short variables
+description: |
+  Extract short versions of common - potentially long - variables
+
+inputs:
+  ref:
+    default: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && github.head_ref || github.ref_name }}
+    description: |
+      The ref to shorten. Defaults to github.head_ref on pull_request and pull_request_target event, github.ref_name else.
+    required: false
+  ref-join-parts:
+    default: '-'
+    description: |
+      How to join prefix, suffix and matched patterns. Defaults to hyphen ('-').
+    required: false
+  ref-keep-after:
+    description: |
+      If ref-keep-after is found in ref, the substring after the match will be kept.
+    required: false
+  ref-keep-before:
+    default: ''
+    description: |
+      If ref-keep-before is found in ref, the substring before the match will be kept.
+    required: false
+  ref-prefix:
+    default: ''
+    description: |
+      A prefix to prepend to the shortened ref
+    required: false
+  ref-suffix:
+    default: ''
+    description: |
+      A suffix to append to the shortened ref
+    required: false
+  sha-length:
+    default: 7
+    description: |
+      Length of sha hash returned. Will return first n characters of sha hash
+    required: false
+  sha:
+    default: ${{ github.sha }}
+    description: |
+      The sha to shorten. Defaults to current commit hash.
+    required: false
+
+outputs:
+  ref:
+    description: Value of shortened ref.
+    value: ${{ steps.ref.outputs.result }}
+  sha:
+    description: Value of input `sha` shortened to `sha-length`
+    value: ${{ steps.sha.outputs.result }}
+
+runs:
+  using: composite
+  steps:
+    - id: ref
+      uses: actions/github-script@v7
+      env:
+        GH_REF_NAME: ${{ inputs.ref }}
+        JOIN: ${{ inputs.ref-join-parts }}
+        REF_PREFIX: ${{ inputs.ref-prefix }}
+        REF_SUFFIX: ${{ inputs.ref-suffix }}
+        REF_KEEP_POST: ${{ inputs.ref-keep-after }}
+        REF_KEEP_PRE: ${{ inputs.ref-keep-before }}
+      with:
+        result-encoding: string
+        script: |
+          const trimJoin = (str) => {
+            const c = JOIN
+            if (c.length !== 1) return str
+            var re = new RegExp('^[' + c + ']+|[' + c + ']+$', 'g');
+            return str.replace(re, '');
+          }
+          const { 
+            GH_REF_NAME,
+            JOIN,
+            REF_PREFIX,
+            REF_SUFFIX,
+            REF_KEEP_POST,
+            REF_KEEP_PRE
+          } = process.env
+          var ref_name = GH_REF_NAME
+          var ref_prefix = REF_PREFIX
+          var ref_suffix = REF_SUFFIX
+          const indexOfPrePattern = GH_REF_NAME.indexOf(REF_KEEP_PRE)
+          const indexOfPostPattern = GH_REF_NAME.indexOf(REF_KEEP_POST)
+
+          const result = []
+          if (indexOfPrePattern >= 0 && REF_KEEP_PRE.length > 0) {
+            result.push(ref_name.slice(0, indexOfPrePattern))
+          }
+          if (indexOfPostPattern >= 0 && REF_KEEP_POST.length > 0) {
+            result.push(ref_name.slice(indexOfPostPattern + REF_KEEP_POST.length))
+          }
+          if (result.length === 0) result.push(ref_name)
+
+          if (ref_prefix.length > 0) result.unshift(ref_prefix)
+          if (ref_suffix.length > 0) result.push(ref_suffix)
+
+          return result.map(trimJoin).join(JOIN)
+    - id: sha
+      uses: actions/github-script@v7
+      env:
+        input_sha: ${{ inputs.sha }}
+        sha_length: ${{ inputs.sha-length }}
+      with:
+        result-encoding: string
+        script: |
+          const { input_sha, sha_length } = process.env
+          return input_sha.slice(0, sha_length)
+        

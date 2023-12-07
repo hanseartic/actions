@@ -1,0 +1,16 @@
+name: sample flow
+
+on:
+  push:
+
+jobs:
+  showcase:
+    runs-on: ubuntu-latest
+    steps:
+      - id: vars
+        uses: hanseartic/actions/short-vars@main
+        with:
+          ref-prefix: before
+          ref-suffix: after
+      - run: |
+          echo "ref: ${{ steps.vars.outputs.ref }}"
