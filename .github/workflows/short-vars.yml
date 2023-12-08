@@ -1,0 +1,78 @@
+name: ''
+on:
+  workflow_call:
+    inputs:
+      ref:
+        default: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && github.head_ref || github.ref_name }}
+        description: |
+          The ref to shorten. Defaults to github.head_ref on pull_request and pull_request_target event, github.ref_name else.
+        required: false
+        type: string
+      ref-join-parts:
+        default: '-'
+        description: |
+          How to join prefix, suffix and matched patterns. Defaults to hyphen ('-').
+        required: false
+        type: string
+      ref-keep-after:
+        description: |
+          If ref-keep-after is found in ref, the substring after the match will be kept.
+        required: false
+        type: string
+      ref-keep-before:
+        default: ''
+        description: |
+          If ref-keep-before is found in ref, the substring before the match will be kept.
+        required: false
+        type: string
+      ref-prefix:
+        default: ''
+        description: |
+          A prefix to prepend to the shortened ref
+        required: false
+        type: string
+      ref-suffix:
+        default: ''
+        description: |
+          A suffix to append to the shortened ref
+        required: false
+        type: string
+      sha-length:
+        default: 7
+        description: |
+          Length of sha hash returned. Will return first n characters of sha hash
+        required: false
+        type: number
+      sha:
+        default: ${{ github.sha }}
+        description: |
+          The sha to shorten. Defaults to current commit hash.
+        required: false
+        type: string
+
+    outputs:
+      ref:
+        description: Value of shortened ref.
+        value: ${{ jobs.short-vars.outputs.ref }}
+      sha:
+        description: Value of input `sha` shortened to `sha-length`
+        value: ${{ jobs.short-vars.outputs.sha }}
+
+jobs:
+  short-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.short-vars.outputs.ref }}
+      sha: ${{ steps.short-vars.outputs.sha }}
+    steps:
+      - id: short-vars
+        uses: hanseartic/actions/short-vars@v1
+        with:
+          ref: ${{ inputs.ref }}
+          ref-join-parts: ${{ inputs.ref-join-parts }}
+          ref-keep-after: ${{ inputs.ref-keep-after }}
+          ref-keep-before: ${{ inputs.ref-keep-before }}
+          ref-prefix: ${{ inputs.ref-prefix }}
+          ref-suffix: ${{ inputs.ref-suffix }}
+          sha-length: ${{ inputs.sha-length }}
+          sha: ${{ inputs.sha }}
