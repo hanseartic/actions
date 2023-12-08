@@ -20,5 +20,7 @@ jobs:
   reusable-workflow:
     uses: hanseartic/actions/.github/workflows/short-vars.yml@main
     with:
-      ref-prefix: pre
-      ref-suffix: workflow
+      sha-length: 10
+      ref-keep-before: '-'
+      ref-keep-after: github.com
+      ref: 'dependabot-npm_service-some-nested-folder-that-makes-the-path-long-src-github.com-package_ns-package_name-1.2.3'

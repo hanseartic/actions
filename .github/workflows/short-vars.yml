@@ -1,4 +1,4 @@
-name: ''
+name: 'short-vars action wrapped in reusable workflow'
 on:
   workflow_call:
     inputs:
@@ -52,10 +52,10 @@ on:
 
     outputs:
       ref:
-        description: Value of shortened ref.
+        description: Value of ref shortened accoring to input parameters.
         value: ${{ jobs.short-vars.outputs.ref }}
       sha:
-        description: Value of input `sha` shortened to `sha-length`
+        description: Value of input 'sha' shortened to 'sha-length'
         value: ${{ jobs.short-vars.outputs.sha }}
 
 jobs:
@@ -65,8 +65,14 @@ jobs:
       ref: ${{ steps.short-vars.outputs.ref }}
       sha: ${{ steps.short-vars.outputs.sha }}
     steps:
+      - uses: actions/checkout@v3
+        with:
+          sparse-checkout: |
+            .github
+            short-vars
+          ref: ${{ github.workflow_sha }}
       - id: short-vars
-        uses: hanseartic/actions/short-vars@v1
+        uses: ./short-vars
         with:
           ref: ${{ inputs.ref }}
           ref-join-parts: ${{ inputs.ref-join-parts }}

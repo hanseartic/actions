@@ -48,7 +48,7 @@ outputs:
     description: Value of shortened ref.
     value: ${{ steps.ref.outputs.result }}
   sha:
-    description: Value of input `sha` shortened to `sha-length`
+    description: Value of input sha shortened to sha-length
     value: ${{ steps.sha.outputs.result }}
 
 runs:
@@ -66,12 +66,7 @@ runs:
       with:
         result-encoding: string
         script: |
-          const trimJoin = (str) => {
-            const c = JOIN
-            if (c.length !== 1) return str
-            var re = new RegExp('^[' + c + ']+|[' + c + ']+$', 'g');
-            return str.replace(re, '');
-          }
+          const result = []
           const { 
             GH_REF_NAME,
             JOIN,
@@ -80,23 +75,31 @@ runs:
             REF_KEEP_POST,
             REF_KEEP_PRE
           } = process.env
-          var ref_name = GH_REF_NAME
-          var ref_prefix = REF_PREFIX
-          var ref_suffix = REF_SUFFIX
+
           const indexOfPrePattern = GH_REF_NAME.indexOf(REF_KEEP_PRE)
           const indexOfPostPattern = GH_REF_NAME.indexOf(REF_KEEP_POST)
 
-          const result = []
+          const trimJoin = (str) => {
+            const c = JOIN
+            if (c.length !== 1) return str
+            var re = new RegExp('^[' + c + ']+|[' + c + ']+$', 'g');
+            return str.replace(re, '');
+          }
+
+          var refName = GH_REF_NAME
+          var refPrefix = REF_PREFIX
+          var refSuffix = REF_SUFFIX
+
           if (indexOfPrePattern >= 0 && REF_KEEP_PRE.length > 0) {
-            result.push(ref_name.slice(0, indexOfPrePattern))
+            result.push(refName.slice(0, indexOfPrePattern))
           }
           if (indexOfPostPattern >= 0 && REF_KEEP_POST.length > 0) {
-            result.push(ref_name.slice(indexOfPostPattern + REF_KEEP_POST.length))
+            result.push(refName.slice(indexOfPostPattern + REF_KEEP_POST.length))
           }
-          if (result.length === 0) result.push(ref_name)
+          if (result.length === 0) result.push(refName)
 
-          if (ref_prefix.length > 0) result.unshift(ref_prefix)
-          if (ref_suffix.length > 0) result.push(ref_suffix)
+          if (refPrefix.length > 0) result.unshift(refPrefix)
+          if (refSuffix.length > 0) result.push(refSuffix)
 
           return result.map(trimJoin).join(JOIN)
     - id: sha
