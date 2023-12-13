@@ -15,9 +15,25 @@ jobs:
           ref-prefix: pre
           ref-suffix: action
       - run: |
-          echo '${{ toJSON(steps.vars.outputs) }}' | jq .
+          echo "### action" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '${{ toJSON(steps.vars.outputs) }}' | jq . >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
       - run: |
-          echo '${{ toJSON(needs.reusable-workflow.outputs) }}' | jq .
+          echo "### reusable workflow" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '${{ toJSON(needs.reusable-workflow.outputs) }}' | jq . >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - run: |
+          echo "### artifact" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "${{ toJSON(steps.vars.outputs) }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "${{ toJSON(steps.vars.outputs) }}" >> short-vars.json
+      - uses: actions/upload-artifact@v3
+        with:
+          name: short-vars
+          path: ${{ github.workspace }}/short-vars.json
   reusable-workflow:
     uses: hanseartic/actions/.github/workflows/short-vars.yml@main
     with:

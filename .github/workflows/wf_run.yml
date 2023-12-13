@@ -9,8 +9,21 @@ jobs:
     print:
         runs-on: ubuntu-latest
         steps:
+            - uses: dawidd6/action-download-artifact@v3
+              with:
+                run_id: ${{ github.event.workflow_run.id }}
+                name: short-vars
+                if_no_artifact_found: warn
             - run: |
-                echo "## event data" >> $GITHUB_STEP_SUMMARY
+                echo '## artifact' >> $GITHUB_STEP_SUMMARY
+                echo '```' >> $GITHUB_STEP_SUMMARY
+                cat short-vars.json >> $GITHUB_STEP_SUMMARY
+                echo '```' >> $GITHUB_STEP_SUMMARY
+                echo '## github' >> $GITHUB_STEP_SUMMARY
+                echo '```' >> $GITHUB_STEP_SUMMARY
+                echo '${{ toJSON(github) }}' | jq . >> $GITHUB_STEP_SUMMARY
+                echo '```' >> $GITHUB_STEP_SUMMARY
+                echo '## event data' >> $GITHUB_STEP_SUMMARY
                 echo '```' >> $GITHUB_STEP_SUMMARY
                 echo '${{ toJSON(github.event) }}' | jq . >> $GITHUB_STEP_SUMMARY
                 echo '```' >> $GITHUB_STEP_SUMMARY
