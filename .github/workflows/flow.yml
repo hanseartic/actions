@@ -2,6 +2,7 @@ name: sample flow
 
 on:
   push:
+  pull_request:
 
 jobs:
   with-action:
@@ -21,6 +22,6 @@ jobs:
     uses: hanseartic/actions/.github/workflows/short-vars.yml@main
     with:
       sha-length: 10
-      ref-keep-before: '-'
+      ref-keep-before: '/'
       ref-keep-after: github.com
-      ref: 'dependabot-npm_service-some-nested-folder-that-makes-the-path-long-src-github.com-package_ns-package_name-1.2.3'
+      ref: 'dependabot/npm_service/some/nested/folder/that/makes-the-path-long-src-github.com-package_ns-package_name-1.2.3'

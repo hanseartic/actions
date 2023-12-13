@@ -1,0 +1,16 @@
+name: workflow run
+on:
+    workflow_run:
+        workflows: [sample flow]
+        types:
+            - completed
+
+jobs:
+    print:
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
+                echo "## event data" >> $GITHUB_STEP_SUMMARY
+                echo '```' >> $GITHUB_STEP_SUMMARY
+                echo '${{ toJSON(github.event) }}' | jq . >> $GITHUB_STEP_SUMMARY
+                echo '```' >> $GITHUB_STEP_SUMMARY
